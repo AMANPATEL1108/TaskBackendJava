@@ -41,17 +41,22 @@ public class TaskMenuService {
                     List<TaskDTO> taskDTOs = menu.getTasks().stream().map(task -> {
                         TaskDTO taskDTO = new TaskDTO();
 
-                        taskDTO.setId(task.getId()); // ✅ Include ID here
+                        taskDTO.setId(task.getId());
                         taskDTO.setName(task.getName());
                         taskDTO.setDescription(task.getDescription());
                         taskDTO.setPriority(task.getPriority());
                         taskDTO.setImageUrl(task.getImageUrl());
                         taskDTO.setEndDate(task.getEndDate());
-                        taskDTO.setUserId(task.getAssignedUser().getId());
+
+                        User assignedUser = task.getAssignedUser();
+                        if (assignedUser != null) {
+                            taskDTO.setUserId(assignedUser.getId());
+                        }
+
                         taskDTO.setTaskMenuId(menu.getId());
 
                         return taskDTO;
-                    }).toList();
+                    }).collect(Collectors.toList());
 
                     dto.setTasks(taskDTOs);
                     return dto;
@@ -59,59 +64,59 @@ public class TaskMenuService {
                 .collect(Collectors.toList());
     }
 
-
-    public void deleteTaskMenu(Long id) {
-        taskMenuRepository.deleteById(id);
+    public boolean deleteTaskMenuWithTasks(Long id) {
+        Optional<TaskMenu> taskMenuOptional = taskMenuRepository.findById(id);
+        if (taskMenuOptional.isPresent()) {
+            try {
+                taskMenuRepository.delete(taskMenuOptional.get());
+                return true;
+            } catch (Exception e) {
+                System.out.println("Failed to delete TaskMenu: " + e.getMessage());
+                e.printStackTrace(); // See full stack trace in logs
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
+
     public TaskMenu updateTaskMenu(Long menuId, List<TaskDTO> taskDTOList) {
-        // Find TaskMenu by ID, throw error if not found
         TaskMenu taskMenu = taskMenuRepository.findById(menuId)
                 .orElseThrow(() -> new RuntimeException("TaskMenu not found"));
 
-        // Clear existing tasks
         taskMenu.getTasks().clear();
 
-        // Loop through the provided TaskDTO list
         for (TaskDTO taskDTO : taskDTOList) {
-            // Create a new Task object for each DTO
             Task task = new Task();
             task.setName(taskDTO.getName());
             task.setDescription(taskDTO.getDescription());
             task.setPriority(taskDTO.getPriority());
-            task.setEndDate(taskDTO.getEndDate());  // Assuming endDate in DTO is of type Date
+            task.setEndDate(taskDTO.getEndDate());
 
-            // Find the user by userId (if User entity exists in the repository)
             User assignedUser = userService.findById(taskDTO.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            task.setAssignedUser(assignedUser); // Set the actual User entity
-
-            task.setTaskMenu(taskMenu); // Associate with the TaskMenu
-            taskMenu.getTasks().add(task); // Add the task to TaskMenu's tasks list
+            task.setAssignedUser(assignedUser);
+            task.setTaskMenu(taskMenu);
+            taskMenu.getTasks().add(task);
         }
 
-        // Save the updated TaskMenu (with new tasks)
         return taskMenuRepository.save(taskMenu);
     }
 
     public Task moveTaskToNewList(Long taskId, Long newMenuId) {
-        // Get the task to update
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        // Get the new task menu
         TaskMenu newTaskMenu = taskMenuRepository.findById(newMenuId)
                 .orElseThrow(() -> new RuntimeException("TaskMenu not found"));
 
-        // Remove task from the current task menu
         task.setTaskMenu(newTaskMenu);
 
-        // Save updated task and task menu
         taskRepository.save(task);
         return task;
     }
-
 
     public Optional<TaskMenu> findMenuById(Long newMenuId) {
         return taskMenuRepository.findById(newMenuId);

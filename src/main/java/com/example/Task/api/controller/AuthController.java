@@ -1,6 +1,8 @@
 package com.example.Task.api.controller;
 
 import com.example.Task.api.config.JwtUtil;
+import com.example.Task.api.model.User;
+import com.example.Task.api.repositoey.UserRepository;
 import com.example.Task.api.request.LoginRequest;
 import com.example.Task.api.response.LoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -22,11 +25,13 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        // 🔐 Authenticate the user
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -34,17 +39,17 @@ public class AuthController {
                 )
         );
 
-        // ✅ Generate JWT token
         String jwtToken = jwtUtil.generateToken(authentication.getName());
 
-        // 🔍 Extract user roles
         String role = authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
-                .orElse("USER"); // default role if none found
+                .orElse("USER");
 
-        // 🔁 Return token and role
-        return ResponseEntity.ok(new LoginResponse(jwtToken, role));
+        // Fetch the user to get the ID
+        Optional<User> user = userRepository.findByUsername(authentication.getName());
+
+        return ResponseEntity.ok(new LoginResponse(jwtToken, role, user.get().getId()));
     }
 }

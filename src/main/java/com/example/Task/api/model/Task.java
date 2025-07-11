@@ -22,6 +22,7 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User assignedUser;
 
+
     @ManyToOne
     @JsonIgnore  // ✅ prevent circular reference in JSON
     @JoinColumn(name = "task_menu_id")

@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByTaskMenuId(Long taskMenuId);
+    void deleteAllByTaskMenuId(Long taskMenuId); // Optional method if you want direct delete
+
 }
 

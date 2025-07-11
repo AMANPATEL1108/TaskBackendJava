@@ -31,10 +31,14 @@ public class TaskMenuController {
         return ResponseEntity.ok(taskMenuService.getAllTaskMenus());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTaskMenu(@PathVariable Long id) {
-        taskMenuService.deleteTaskMenu(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/deletetaskmenu/{id}")
+    public ResponseEntity<String> deleteTaskMenuWithTasks(@PathVariable Long id) {
+        boolean deleted = taskMenuService.deleteTaskMenuWithTasks(id);
+        if (deleted) {
+            return ResponseEntity.ok("TaskMenu and its associated Tasks deleted successfully.");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/update-order/{menuId}")

@@ -10,9 +10,9 @@ public class TaskDTO {
     private String imageUrl;
     private Date endDate;
     private Long userId; // ID of the user assigned to the task
-    private Long taskMenuId; // Keep if needed for creation
+    private Long taskMenuId;
 
-    // Getters and setters ...
+    // getters and setters for all fields including userName
 
     public Long getId() {
         return id;
@@ -69,6 +69,8 @@ public class TaskDTO {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+
+
 
     public Long getTaskMenuId() {
         return taskMenuId;

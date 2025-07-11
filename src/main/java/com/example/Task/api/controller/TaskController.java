@@ -62,7 +62,7 @@ public class TaskController {
 
             // *** UPDATED HERE: Store relative URL instead of absolute file system path ***
             // This URL can be used by frontend to access image via HTTP request.
-            imageUrl = "C:/Users/amanp/OneDrive/Desktop/02/Angular/TODO-List Full Stack/Task/uploads/" + newFileName;  // <-- relative path mapped in WebConfig
+            imageUrl = "/uploads/" + newFileName;  // <-- relative path mapped in WebConfig
         }
 
 

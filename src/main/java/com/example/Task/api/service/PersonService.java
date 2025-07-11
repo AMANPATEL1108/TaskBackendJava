@@ -50,8 +50,8 @@ public class PersonService {
             if (person.getOwnerofDocument() != null) {
                 existingUser.setOwnerofDocument(person.getOwnerofDocument());
             }
-            if (person.getImageUrl() != null) {
-                existingUser.setImageUrl(person.getImageUrl());
+            if (person.getPdfUrl() != null) {
+                existingUser.setPdfUrl(person.getPdfUrl());
             }
 
             existingUser.setUpdateddate(new Date()); // update time
@@ -62,4 +62,6 @@ public class PersonService {
             return "User not found with ID: " + id;
         }
     }
+
+
 }

@@ -5,27 +5,28 @@ import lombok.Data;
 
 import java.util.Date;
 
-
-
 @Entity
 @Table(name = "document_user")
 public class Person {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String documentName;
     private String ownerofDocument;
     private Date createdDate;
     private Date updateddate;
-    private String imageUrl;
+    private String pdfUrl;
 
-    public String getImageUrl() {
-        return imageUrl;
+    // Getters and setters...
+    public String getPdfUrl() {
+        return pdfUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setPdfUrl(String pdfUrl) {
+        this.pdfUrl = pdfUrl;
     }
 
     public Long getId() {
