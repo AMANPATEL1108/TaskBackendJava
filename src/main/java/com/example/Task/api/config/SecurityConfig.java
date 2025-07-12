@@ -26,7 +26,7 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
-    @   Bean
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> {})

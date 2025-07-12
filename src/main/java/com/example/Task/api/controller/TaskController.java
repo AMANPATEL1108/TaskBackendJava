@@ -26,7 +26,7 @@ public class TaskController {
     private TaskService taskService;
 
     // Absolute upload directory path on your PC
-    private static final String UPLOAD_DIR = "C:/Users/amanp/OneDrive/Desktop/02/Angular/TODO-List Full Stack/Task/uploads";
+    private static final String UPLOAD_DIR = "C:/Users/amanp/OneDrive/Desktop/02/Angular/TODO-List Full Stack/Task/uploads/";
 
     @Autowired
     private TaskMenuService taskMenuService;
