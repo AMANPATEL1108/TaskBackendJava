@@ -20,7 +20,6 @@ public class Person {
     private Date updateddate;
     private String pdfUrl;
 
-    // Getters and setters...
     public String getPdfUrl() {
         return pdfUrl;
     }

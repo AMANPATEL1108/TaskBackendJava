@@ -16,7 +16,6 @@ public class LeaveService {
     private LeaveRepository leaveRepository;
 
     public String createLeave(LeaveSection leaveSection) {
-        // Set requestdate when creating a leave
         leaveSection.setRequestdate(new Date());
         leaveRepository.save(leaveSection);
         return "Leave Created";
@@ -55,10 +54,7 @@ public class LeaveService {
             if (leaveSection.getStatusofleave() != null) {
                 existingLeaveSection.setStatusofleave(leaveSection.getStatusofleave());
             }
-            // Do NOT update requestdate on update
-            // if (leaveSection.getRequestdate() != null) {
-            //     existingLeaveSection.setRequestdate(leaveSection.getRequestdate());
-            // }
+
 
             // Set updateDate to current date on update
             existingLeaveSection.setUpdateDate(new Date());

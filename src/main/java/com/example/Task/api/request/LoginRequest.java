@@ -12,7 +12,6 @@ public class LoginRequest {
     public void setCaptchaToken(String captchaToken) {
         this.captchaToken = captchaToken;
     }
-// Getters and setters
 
     public String getUsername() {
         return username;

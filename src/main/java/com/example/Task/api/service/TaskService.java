@@ -66,19 +66,15 @@ public class TaskService {
     }
 
     public void moveTaskToMenu(Long taskId, Long newMenuId) {
-        // Find the task by ID
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        // Find the new menu by ID
         TaskMenu newMenu = taskMenuRepository.findById(newMenuId)
                 .orElseThrow(() -> new RuntimeException("Menu not found"));
 
-        // Update the task's menu
-        task.setTaskMenu(newMenu);  // This updates the task's taskMenu reference
+        task.setTaskMenu(newMenu);
 
-        // Save the updated task
-        taskRepository.save(task);  // Make sure this saves the changes to the database
+        taskRepository.save(task);
     }
 
     public Optional<Task> findTaskById(Long taskId) {

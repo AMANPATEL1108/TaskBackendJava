@@ -97,19 +97,15 @@ public class PersonController {
         String uploadDir = "C:/Users/amanp/OneDrive/Desktop/02/Angular/TODO-List Full Stack/Task/uploads";  // <-- Use an absolute path
 
         try {
-            // Create the uploads folder if it doesn't exist
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath); // Create the directory if it doesn't exist
             }
 
-            // Define the target file path
             Path targetLocation = uploadPath.resolve(fileName);
 
-            // Transfer the file to the specified location
             file.transferTo(targetLocation.toFile());
 
-            // Return the relative file path that will be saved in the database
             return targetLocation.toString();
         } catch (IOException e) {
             e.printStackTrace();

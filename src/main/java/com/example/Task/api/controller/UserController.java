@@ -22,7 +22,7 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private FileStorageService fileStorageService; // ✅ Inject FileStorageService
+    private FileStorageService fileStorageService;
 
     @PostMapping("/create")
     public ResponseEntity<Map<String, String>> createUser(

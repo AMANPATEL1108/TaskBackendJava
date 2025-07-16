@@ -22,7 +22,7 @@ public class UserService {
 
     @PostConstruct
     public void init() {
-        updateAllUsersAge(); // ✅ Automatically called after bean is initialized
+        updateAllUsersAge();
     }
 
     public void createUser(UserDTO userDTO) {

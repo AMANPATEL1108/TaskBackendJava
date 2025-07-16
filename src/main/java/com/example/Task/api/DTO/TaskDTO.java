@@ -12,7 +12,6 @@ public class TaskDTO {
     private Long userId; // ID of the user assigned to the task
     private Long taskMenuId;
 
-    // getters and setters for all fields including userName
 
     public Long getId() {
         return id;

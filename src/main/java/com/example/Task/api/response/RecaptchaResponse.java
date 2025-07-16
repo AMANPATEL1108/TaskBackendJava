@@ -41,5 +41,4 @@ public class RecaptchaResponse {
     private String hostname;
     private List<String> errorCodes;
 
-    // Getters and setters
 }

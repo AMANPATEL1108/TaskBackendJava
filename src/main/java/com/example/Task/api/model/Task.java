@@ -24,7 +24,7 @@ public class Task {
 
 
     @ManyToOne
-    @JsonIgnore  // ✅ prevent circular reference in JSON
+    @JsonIgnore
     @JoinColumn(name = "task_menu_id")
     private TaskMenu taskMenu;
 

@@ -31,7 +31,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        // Authenticate user
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -39,7 +38,6 @@ public class AuthController {
                 )
         );
 
-        // Generate JWT and get role
         String jwtToken = jwtUtil.generateToken(authentication.getName());
         String role = authentication.getAuthorities()
                 .stream()

@@ -36,14 +36,12 @@ public class TaskMenu {
     }
 
 
-//    @OneToMany(mappedBy = "taskMenu")
-//    private List<Task> tasks = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "taskMenu", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
 
 
 
-    // Getters and setters...
 }
 

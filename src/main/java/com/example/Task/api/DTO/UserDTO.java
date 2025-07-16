@@ -26,7 +26,6 @@ public class UserDTO {
     public UserDTO() {
     }
 
-    // Getters and setters for all fields
 
     public Long getId() {
         return id;

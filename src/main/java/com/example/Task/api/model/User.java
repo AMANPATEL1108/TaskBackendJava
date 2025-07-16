@@ -146,7 +146,4 @@ public class User {
         this.id = id;
     }
 
-// no default, must be set explicitly
-
-    // Getters and setters...
 }
