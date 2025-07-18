@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Controller
 @RestController
-@RequestMapping("/leave")
+@RequestMapping("user/leave")
 @CrossOrigin(origins = "http://localhost:4200")  // allow Angular dev server origin
 public class LeaveController {
 
@@ -23,10 +23,7 @@ public class LeaveController {
         return leaveService.createLeave(leaveSection);
     }
 
-    @GetMapping("/get-all-leaves")
-    public List<LeaveSection> getAllLeaves() {
-        return leaveService.getAllLeaves();
-    }
+
 
     @GetMapping("/get-leave-ById/{id}")
     public Optional<LeaveSection> getLeaveById(@PathVariable Long id){

@@ -13,33 +13,21 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/taskmenu")
+@RequestMapping("user/taskmenu")
 @CrossOrigin(origins = "http://localhost:4200")
 public class TaskMenuController {
 
     @Autowired
     private TaskMenuService taskMenuService;
 
-    @PostMapping("/create")
-    public ResponseEntity<TaskMenu> createTaskMenu(@RequestBody TaskMenuDTO taskMenuDTO) {
-        TaskMenu created = taskMenuService.createTaskMenu(taskMenuDTO);
-        return ResponseEntity.ok(created);
-    }
+
 
     @GetMapping("/get-all-taskmenu")
     public ResponseEntity<List<TaskMenuDTO>> getAllTaskMenus() {
         return ResponseEntity.ok(taskMenuService.getAllTaskMenus());
     }
 
-    @DeleteMapping("/deletetaskmenu/{id}")
-    public ResponseEntity<String> deleteTaskMenuWithTasks(@PathVariable Long id) {
-        boolean deleted = taskMenuService.deleteTaskMenuWithTasks(id);
-        if (deleted) {
-            return ResponseEntity.ok("TaskMenu and its associated Tasks deleted successfully.");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
+
 
     @PutMapping("/update-order/{menuId}")
     public ResponseEntity<TaskMenu> updateTaskMenu(@PathVariable Long menuId, @RequestBody List<TaskDTO> tasks) {

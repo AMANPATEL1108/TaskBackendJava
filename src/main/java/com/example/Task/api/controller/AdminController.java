@@ -1,0 +1,229 @@
+package com.example.Task.api.controller;
+
+import com.example.Task.api.DTO.TaskDTO;
+import com.example.Task.api.DTO.TaskMenuDTO;
+import com.example.Task.api.DTO.UserDTO;
+import com.example.Task.api.model.*;
+import com.example.Task.api.response.ApiResponse;
+import com.example.Task.api.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.example.Task.api.controller.TaskController.UPLOAD_DIR;
+
+@RestController
+@RequestMapping("/admin")
+public class AdminController {
+
+    @Autowired
+    private LeaveService leaveService;
+
+    @Autowired
+    private TaskService taskService;
+
+    @Autowired
+    private PersonService personService;
+    @Autowired
+    private TaskMenuService taskMenuService;
+
+    @Autowired
+    private UserService userService;
+
+
+
+    @GetMapping("/get-all-leaves")
+    public List<LeaveSection> getAllLeaves() {
+        return leaveService.getAllLeaves();
+    }
+
+
+    @PostMapping("/create-task")
+    public ResponseEntity<Task> createTask(
+            @RequestParam("name") String name,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam("priority") String priority,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
+            @RequestParam("userId") Long userId,
+            @RequestParam("taskMenuId") Long taskMenuId,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
+
+        String imageUrl = null;
+        if (imageFile != null && !imageFile.isEmpty()) {
+            // Ensure directory exists
+            File uploadDirFile = new File(UPLOAD_DIR);
+            if (!uploadDirFile.exists()) uploadDirFile.mkdirs();
+
+            // Extract file extension safely
+            String originalFilename = imageFile.getOriginalFilename();
+            String fileExtension = "";
+
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            String newFileName = System.currentTimeMillis() + fileExtension;
+
+            File dest = new File(UPLOAD_DIR + newFileName);
+            imageFile.transferTo(dest);
+
+            // *** UPDATED HERE: Store relative URL instead of absolute file system path ***
+            // This URL can be used by frontend to access image via HTTP request.
+            imageUrl = "/uploads/" + newFileName;  // <-- relative path mapped in WebConfig
+        }
+
+
+        TaskDTO dto = new TaskDTO();
+        dto.setName(name);
+        dto.setDescription(description);
+        dto.setPriority(priority);
+        dto.setEndDate(endDate);
+        dto.setUserId(userId);
+        dto.setTaskMenuId(taskMenuId);
+        dto.setImageUrl(imageUrl);
+
+        Task createdTask = taskService.createTask(dto);
+        return ResponseEntity.ok(createdTask);
+    }
+
+
+    @PostMapping("/create-task-menu")
+    public ResponseEntity<TaskMenu> createTaskMenu(@RequestBody TaskMenuDTO taskMenuDTO) {
+        TaskMenu created = taskMenuService.createTaskMenu(taskMenuDTO);
+        return ResponseEntity.ok(created);
+    }
+
+    @DeleteMapping("/deletetaskmenu/{id}")
+    public ResponseEntity<String> deleteTaskMenuWithTasks(@PathVariable Long id) {
+        boolean deleted = taskMenuService.deleteTaskMenuWithTasks(id);
+        if (deleted) {
+            return ResponseEntity.ok("TaskMenu and its associated Tasks deleted successfully.");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    private String saveFile(MultipartFile file) {
+        // Ensure the file is a PDF
+        if (!file.getContentType().equals("application/pdf")) {
+            throw new RuntimeException("Only PDF files are allowed!");
+        }
+
+        // Clean the file name
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+
+        // Absolute path to the upload folder
+        String uploadDir = "C:/Users/amanp/OneDrive/Desktop/02/Angular/TODO-List Full Stack/Task/uploads";  // <-- Use an absolute path
+
+        try {
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath); // Create the directory if it doesn't exist
+            }
+
+            Path targetLocation = uploadPath.resolve(fileName);
+
+            file.transferTo(targetLocation.toFile());
+
+            return targetLocation.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to store the file " + fileName);
+        }
+    }
+
+    private final String UPLOAD_DIR = "uploads/";
+
+    // Create Person - Store image file and save URL
+    @PostMapping(value = "/create-person", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createPerson(
+            @RequestPart("person") Person personDTO, // The person object that comes as JSON
+            @RequestPart(value = "file", required = false) MultipartFile file) { // File part
+
+        try {
+            // If a file is uploaded, save it and set the pdfUrl
+            if (file != null && !file.isEmpty()) {
+                String fileName = saveFile(file); // Save the file and get the filename
+                personDTO.setPdfUrl(fileName);    // Save the file URL in the person entity
+            }
+
+            // Set timestamps
+            personDTO.setCreatedDate(new Date());
+            personDTO.setUpdateddate(new Date());
+
+            // Save person to the database
+            personService.savePerson(personDTO);
+
+            return ResponseEntity.ok(new ApiResponse(true, "Document created successfully"));
+        } catch (Exception e) {
+            // Handle errors
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(new ApiResponse(false, "Error: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("delete-task/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        System.out.println("ID sio s"+id);
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/get-all-persons")
+    public ResponseEntity<List<Person>> getAllPersons() {
+        return ResponseEntity.ok(personService.getAllPersons());
+    }
+
+    // Delete Person
+    @DeleteMapping("/person-deleteByID/{id}")
+    public ResponseEntity<ApiResponse> deletePerson(@PathVariable String id) {
+        personService.deletePerson(id);
+        return ResponseEntity.ok(new ApiResponse(true, "Person deleted successfully"));
+    }
+
+
+    @GetMapping("/get-all-users")
+    public  ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.findAll());
+    }
+
+    @PutMapping("/update-order/{menuId}")
+    public ResponseEntity<TaskMenu> updateTaskMenu(@PathVariable Long menuId, @RequestBody List<TaskDTO> tasks) {
+        TaskMenu updatedTaskMenu = taskMenuService.updateTaskMenu(menuId, tasks);
+        return ResponseEntity.ok(updatedTaskMenu);
+    }
+
+    @PutMapping("/move/{taskId}")
+    public ResponseEntity<Task> moveTaskToNewList(@PathVariable Long taskId, @RequestBody Map<String, Long> request) {
+        Long newMenuId = request.get("newMenuId");
+        Task updatedTask = taskMenuService.moveTaskToNewList(taskId, newMenuId);
+        return ResponseEntity.ok(updatedTask);
+    }
+
+
+    @GetMapping("/findById/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        Optional<User> userOpt = userService.findById(id);
+        if (userOpt.isPresent()) {
+            UserDTO dto = userService.convertToDTO(userOpt.get());
+            return ResponseEntity.ok(dto);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+}

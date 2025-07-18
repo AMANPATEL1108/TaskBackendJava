@@ -6,22 +6,22 @@ import jakarta.persistence.TemporalType;
 import java.util.Date;
 
 public class UserDTO {
-    private Long id;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String address;
-    private String city;
-    private String state;
-    private String country;
-    private String username;
-    private String password;
-    private Integer age;
-    private String role;
-    private String imageUrl;
+        private Long id;
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String address;
+        private String city;
+        private String state;
+        private String country;
+        private String username;
+        private String password;
+        private Integer age;
+        private String role;
+        private String imageUrl;
 
-    @Temporal(TemporalType.DATE)
-    private Date dateofbirth;
+        @Temporal(TemporalType.DATE)
+        private Date dateofbirth;
 
     public UserDTO() {
     }

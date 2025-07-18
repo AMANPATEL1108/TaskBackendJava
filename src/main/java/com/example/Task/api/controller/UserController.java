@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/user")
 @CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
     @Autowired
@@ -21,24 +21,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private FileStorageService fileStorageService;
-
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, String>> createUser(
-            @RequestPart("user") UserDTO userDto,
-            @RequestPart("file") MultipartFile file) {
-
-        // ✅ Store file and update DTO
-        String imageUrl = fileStorageService.storeFile(file);
-        userDto.setImageUrl(imageUrl);
-
-        userService.createUser(userDto);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "User created successfully");
-        return ResponseEntity.ok(response);
-    }
 
 
     @DeleteMapping("deleteById/{id}")

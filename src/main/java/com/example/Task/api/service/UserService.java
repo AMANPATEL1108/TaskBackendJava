@@ -5,6 +5,7 @@ import com.example.Task.api.model.User;
 import com.example.Task.api.repositoey.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -25,6 +26,10 @@ public class UserService {
         updateAllUsersAge();
     }
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+
     public void createUser(UserDTO userDTO) {
         User user = new User();
 
@@ -38,7 +43,7 @@ public class UserService {
         user.setImageUrl(userDTO.getImageUrl());
 
         user.setUsername(userDTO.getUsername());
-        user.setPassword(userDTO.getPassword());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));  // ✅ bcrypt hashed
         user.setDateofbirth(userDTO.getDateofbirth());
 
         // Calculate age from DOB
@@ -50,7 +55,7 @@ public class UserService {
 
         // Default role
         if (userDTO.getRole() == null || userDTO.getRole().isBlank()) {
-            user.setRole("EMPLOYEE");
+            user.setRole("USER");
         } else {
             user.setRole(userDTO.getRole());
         }
