@@ -28,31 +28,31 @@ public class TaskService {
     @Autowired
     private TaskMenuService taskMenuService;
 
-    public Task createTask(TaskDTO dto) {
-        if (dto.getUserId() == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+        public Task createTask(TaskDTO dto) {
+            if (dto.getUserId() == null) {
+                throw new IllegalArgumentException("User ID cannot be null");
+            }
+            if (dto.getTaskMenuId() == null) {
+                throw new IllegalArgumentException("TaskMenu ID cannot be null");
+            }
+
+            User user = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("User not found with id: " + dto.getUserId()));
+
+            TaskMenu menu = taskMenuRepository.findById(dto.getTaskMenuId())
+                    .orElseThrow(() -> new NoSuchElementException("TaskMenu not found with id: " + dto.getTaskMenuId()));
+
+            Task task = new Task();
+            task.setName(dto.getName());
+            task.setDescription(dto.getDescription());
+            task.setPriority(dto.getPriority());
+            task.setImageUrl(dto.getImageUrl());
+            task.setEndDate(dto.getEndDate());
+            task.setAssignedUser(user);
+            task.setTaskMenu(menu);
+
+            return taskRepository.save(task);
         }
-        if (dto.getTaskMenuId() == null) {
-            throw new IllegalArgumentException("TaskMenu ID cannot be null");
-        }
-
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + dto.getUserId()));
-
-        TaskMenu menu = taskMenuRepository.findById(dto.getTaskMenuId())
-                .orElseThrow(() -> new NoSuchElementException("TaskMenu not found with id: " + dto.getTaskMenuId()));
-
-        Task task = new Task();
-        task.setName(dto.getName());
-        task.setDescription(dto.getDescription());
-        task.setPriority(dto.getPriority());
-        task.setImageUrl(dto.getImageUrl());
-        task.setEndDate(dto.getEndDate());
-        task.setAssignedUser(user);
-        task.setTaskMenu(menu);
-
-        return taskRepository.save(task);
-    }
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();

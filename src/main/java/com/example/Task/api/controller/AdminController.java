@@ -7,6 +7,7 @@ import com.example.Task.api.model.*;
 import com.example.Task.api.response.ApiResponse;
 import com.example.Task.api.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,11 @@ import static com.example.Task.api.controller.TaskController.UPLOAD_DIR;
 
 @RestController
 @RequestMapping("/admin")
+@CrossOrigin(origins = "http://localhost:4200")
 public class AdminController {
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @Autowired
     private LeaveService leaveService;
@@ -46,6 +51,10 @@ public class AdminController {
     private UserService userService;
 
 
+    @GetMapping("/get-all-taskmenu")
+    public ResponseEntity<List<TaskMenuDTO>> getAllTaskMenus() {
+        return ResponseEntity.ok(taskMenuService.getAllTaskMenus());
+    }
 
     @GetMapping("/get-all-leaves")
     public List<LeaveSection> getAllLeaves() {
@@ -61,32 +70,29 @@ public class AdminController {
             @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
             @RequestParam("userId") Long userId,
             @RequestParam("taskMenuId") Long taskMenuId,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+    ) throws IOException {
 
         String imageUrl = null;
-        if (imageFile != null && !imageFile.isEmpty()) {
-            // Ensure directory exists
-            File uploadDirFile = new File(UPLOAD_DIR);
-            if (!uploadDirFile.exists()) uploadDirFile.mkdirs();
 
-            // Extract file extension safely
+        if (imageFile != null && !imageFile.isEmpty()) {
+            File uploadDirFile = new File(uploadDir);
+            if (!uploadDirFile.exists()) {
+                uploadDirFile.mkdirs(); // ✅ Ensure directory exists
+            }
+
             String originalFilename = imageFile.getOriginalFilename();
             String fileExtension = "";
-
             if (originalFilename != null && originalFilename.contains(".")) {
                 fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
 
             String newFileName = System.currentTimeMillis() + fileExtension;
-
-            File dest = new File(UPLOAD_DIR + newFileName);
+            File dest = new File(uploadDirFile, newFileName);
             imageFile.transferTo(dest);
 
-            // *** UPDATED HERE: Store relative URL instead of absolute file system path ***
-            // This URL can be used by frontend to access image via HTTP request.
-            imageUrl = "/uploads/" + newFileName;  // <-- relative path mapped in WebConfig
+            imageUrl = "/uploads/" + newFileName;  // ✅ This works with your WebConfig
         }
-
 
         TaskDTO dto = new TaskDTO();
         dto.setName(name);
