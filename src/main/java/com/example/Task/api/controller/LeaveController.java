@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Controller
 @RestController
-@RequestMapping("user/leave")
+@RequestMapping("/leave")
 @CrossOrigin(origins = "http://localhost:4200")  // allow Angular dev server origin
 public class LeaveController {
 

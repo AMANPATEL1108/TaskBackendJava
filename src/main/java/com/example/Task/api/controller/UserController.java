@@ -23,14 +23,6 @@ public class UserController {
 
 
 
-
-
-    @DeleteMapping("deleteById/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        userService.deleteById(id);
-        return ResponseEntity.ok("User deleted successfully");
-    }
-
     @GetMapping("/get-all-users")
     public  ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.findAll());
@@ -49,11 +41,6 @@ public class UserController {
     }
 
 
-    @GetMapping("/upcoming-birthdays")
-    public ResponseEntity<List<User>> getUpcomingBirthdays() {
-        return ResponseEntity.ok(userService.getUsersSortedByUpcomingBirthdays());
-    }
-
     @PutMapping("/updateById/{id}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable Long id, @RequestBody User user) {
         String message = userService.updateById(id, user);
@@ -61,8 +48,6 @@ public class UserController {
         response.put("message", message);
         return ResponseEntity.ok(response);
     }
-
-
 
 
 

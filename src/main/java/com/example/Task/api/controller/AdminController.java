@@ -4,6 +4,7 @@ import com.example.Task.api.DTO.TaskDTO;
 import com.example.Task.api.DTO.TaskMenuDTO;
 import com.example.Task.api.DTO.UserDTO;
 import com.example.Task.api.model.*;
+import com.example.Task.api.repositoey.UserRepository;
 import com.example.Task.api.response.ApiResponse;
 import com.example.Task.api.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,12 +23,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import static com.example.Task.api.controller.TaskController.UPLOAD_DIR;
 
 @RestController
 @RequestMapping("/admin")
@@ -49,6 +47,10 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
 
     @GetMapping("/get-all-taskmenu")
@@ -156,7 +158,7 @@ public class AdminController {
     private final String UPLOAD_DIR = "uploads/";
 
     // Create Person - Store image file and save URL
-    @PostMapping(value = "/create-person", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+            @PostMapping(value = "/create-person", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPerson(
             @RequestPart("person") Person personDTO, // The person object that comes as JSON
             @RequestPart(value = "file", required = false) MultipartFile file) { // File part
@@ -232,4 +234,84 @@ public class AdminController {
             return ResponseEntity.notFound().build();
         }
     }
+
+
+    @DeleteMapping("deleteById/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        userService.deleteById(id);
+        return ResponseEntity.ok("User deleted successfully");
+    }
+
+    @PutMapping("/updateById/{id}")
+    public ResponseEntity<Map<String, String>> updateUser(@PathVariable Long id, @RequestBody User user) {
+        String message = userService.updateById(id, user);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
+        return ResponseEntity.ok(response);
+    }
+
+
+
+
+    @GetMapping("/get-leave-ById/{id}")
+    public Optional<LeaveSection> getLeaveById(@PathVariable Long id){
+        return leaveService.getLeaveById(id);
+    }
+
+    @DeleteMapping("/leaveDeleteById/{id}")
+    public String leaveDeleteById(@PathVariable Long id){
+        return leaveService.deleteLeaveById(id);
+    }
+
+    @PutMapping("/updateById-leave/{id}")
+    public String updateLeave(@PathVariable Long id, @RequestBody LeaveSection leaveSection){
+        return leaveService.updateLeaveById(id, leaveSection);
+    }
+
+    @PutMapping(value = "updateById-person/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updatePerson(
+            @PathVariable String id,
+            @RequestPart("person") Person personDTO, // The person object that comes as JSON
+            @RequestPart(value = "file", required = false) MultipartFile file) { // File part
+
+        Optional<Person> opt = personService.getPersonById(id);
+        if (!opt.isPresent()) return ResponseEntity.notFound().build();
+
+        Person p = opt.get();
+
+        // If a file is uploaded, save it and set the pdfUrl
+        if (file != null && !file.isEmpty()) {
+            String fileName = saveFile(file); // Save the file and get the filename
+            p.setPdfUrl(fileName);           // Update the file URL
+        }
+
+        // Update other fields if provided
+        if (personDTO.getDocumentName() != null) p.setDocumentName(personDTO.getDocumentName());
+        if (personDTO.getOwnerofDocument() != null) p.setOwnerofDocument(personDTO.getOwnerofDocument());
+
+        p.setUpdateddate(new Date());
+        personService.savePerson(p);
+
+        return ResponseEntity.ok(new ApiResponse(true, "Document updated successfully"));
+    }
+
+    @Autowired
+    private UserRepository userRepository;
+
+
+
+
+
+    @PutMapping(value = "/updateById-user/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateUser(
+            @PathVariable Long id,
+            @RequestPart("user") User user,  // Or whatever your DTO class is
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        String message = userService.updateById(id, user);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
+        return ResponseEntity.ok(response);
+    }
+
+
 }

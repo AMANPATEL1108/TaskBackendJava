@@ -161,7 +161,12 @@ public class UserService {
             if (user.getState() != null) existingUser.setState(user.getState());
             if (user.getCountry() != null) existingUser.setCountry(user.getCountry());
             if (user.getUsername() != null) existingUser.setUsername(user.getUsername());
-            if (user.getPassword() != null) existingUser.setPassword(user.getPassword());
+
+            if (user.getPassword() != null) {
+                String encodedPassword = passwordEncoder.encode(user.getPassword());
+                existingUser.setPassword(encodedPassword);
+            }
+
             if (user.getAge() != null) existingUser.setAge(user.getAge());
             if (user.getRole() != null) existingUser.setRole(user.getRole());
             if (user.getDateofbirth() != null) existingUser.setDateofbirth(user.getDateofbirth());
@@ -173,4 +178,5 @@ public class UserService {
             return "User not found with ID: " + id;
         }
     }
+
 }
