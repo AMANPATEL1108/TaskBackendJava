@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -147,36 +148,36 @@ public class UserService {
         userRepository.saveAll(users);
     }
 
-    public String updateById(Long id, User user) {
-        Optional<User> optionalUser = userRepository.findById(id);
+    public String updateById(Long id, User user, MultipartFile file) {
+            Optional<User> optionalUser = userRepository.findById(id);
 
-        if (optionalUser.isPresent()) {
-            User existingUser = optionalUser.get();
+            if (optionalUser.isPresent()) {
+                User existingUser = optionalUser.get();
 
-            if (user.getFirstName() != null) existingUser.setFirstName(user.getFirstName());
-            if (user.getLastName() != null) existingUser.setLastName(user.getLastName());
-            if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
-            if (user.getAddress() != null) existingUser.setAddress(user.getAddress());
-            if (user.getCity() != null) existingUser.setCity(user.getCity());
-            if (user.getState() != null) existingUser.setState(user.getState());
-            if (user.getCountry() != null) existingUser.setCountry(user.getCountry());
-            if (user.getUsername() != null) existingUser.setUsername(user.getUsername());
+                if (user.getFirstName() != null) existingUser.setFirstName(user.getFirstName());
+                if (user.getLastName() != null) existingUser.setLastName(user.getLastName());
+                if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
+                if (user.getAddress() != null) existingUser.setAddress(user.getAddress());
+                if (user.getCity() != null) existingUser.setCity(user.getCity());
+                if (user.getState() != null) existingUser.setState(user.getState());
+                if (user.getCountry() != null) existingUser.setCountry(user.getCountry());
+                if (user.getUsername() != null) existingUser.setUsername(user.getUsername());
 
-            if (user.getPassword() != null) {
-                String encodedPassword = passwordEncoder.encode(user.getPassword());
-                existingUser.setPassword(encodedPassword);
+                if (user.getPassword() != null) {
+                    String encodedPassword = passwordEncoder.encode(user.getPassword());
+                    existingUser.setPassword(encodedPassword);
+                }
+
+                if (user.getAge() != null) existingUser.setAge(user.getAge());
+                if (user.getRole() != null) existingUser.setRole(user.getRole());
+                if (user.getDateofbirth() != null) existingUser.setDateofbirth(user.getDateofbirth());
+                if (user.getImageUrl() != null) existingUser.setImageUrl(user.getImageUrl());
+
+                userRepository.save(existingUser);
+                return "User details successfully updated.";
+            } else {
+                return "User not found with ID: " + id;
             }
-
-            if (user.getAge() != null) existingUser.setAge(user.getAge());
-            if (user.getRole() != null) existingUser.setRole(user.getRole());
-            if (user.getDateofbirth() != null) existingUser.setDateofbirth(user.getDateofbirth());
-            if (user.getImageUrl() != null) existingUser.setImageUrl(user.getImageUrl());
-
-            userRepository.save(existingUser);
-            return "User details successfully updated.";
-        } else {
-            return "User not found with ID: " + id;
         }
-    }
 
 }

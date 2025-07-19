@@ -3,10 +3,12 @@ package com.example.Task.api.controller;
 import com.example.Task.api.DTO.TaskDTO;
 import com.example.Task.api.DTO.TaskMenuDTO;
 import com.example.Task.api.DTO.UserDTO;
+import com.example.Task.api.config.FileStorageService;
 import com.example.Task.api.model.*;
 import com.example.Task.api.repositoey.UserRepository;
 import com.example.Task.api.response.ApiResponse;
 import com.example.Task.api.service.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -53,10 +55,6 @@ public class AdminController {
 
 
 
-    @GetMapping("/get-all-taskmenu")
-    public ResponseEntity<List<TaskMenuDTO>> getAllTaskMenus() {
-        return ResponseEntity.ok(taskMenuService.getAllTaskMenus());
-    }
 
     @GetMapping("/get-all-leaves")
     public List<LeaveSection> getAllLeaves() {
@@ -158,7 +156,7 @@ public class AdminController {
     private final String UPLOAD_DIR = "uploads/";
 
     // Create Person - Store image file and save URL
-            @PostMapping(value = "/create-person", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/create-person", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPerson(
             @RequestPart("person") Person personDTO, // The person object that comes as JSON
             @RequestPart(value = "file", required = false) MultipartFile file) { // File part
@@ -205,6 +203,24 @@ public class AdminController {
     }
 
 
+    @PutMapping("/updateById-usserrights/{id}")
+    public ResponseEntity<String> updateUserById(@PathVariable Long id, @RequestBody User updatedUser) {
+        Optional<User> optionalUser = userRepository.findById(id);
+
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User existingUser = optionalUser.get();
+        existingUser.setUsername(updatedUser.getUsername());
+        existingUser.setRole(updatedUser.getRole());
+        existingUser.setDateofbirth(updatedUser.getDateofbirth());
+
+        userRepository.save(existingUser);
+        return ResponseEntity.ok("User updated successfully");
+    }
+
+
     @GetMapping("/get-all-users")
     public  ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.findAll());
@@ -241,15 +257,6 @@ public class AdminController {
         userService.deleteById(id);
         return ResponseEntity.ok("User deleted successfully");
     }
-
-    @PutMapping("/updateById/{id}")
-    public ResponseEntity<Map<String, String>> updateUser(@PathVariable Long id, @RequestBody User user) {
-        String message = userService.updateById(id, user);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", message);
-        return ResponseEntity.ok(response);
-    }
-
 
 
 
@@ -301,17 +308,42 @@ public class AdminController {
 
 
 
-
-    @PutMapping(value = "/updateById-user/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateUser(
+    @PutMapping(value = "/updateById/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> updateUser(
             @PathVariable Long id,
-            @RequestPart("user") User user,  // Or whatever your DTO class is
+            @RequestPart("user") User user,
             @RequestPart(value = "file", required = false) MultipartFile file) {
-        String message = userService.updateById(id, user);
+
+        String message = userService.updateById(id, user, file);
         Map<String, String> response = new HashMap<>();
         response.put("message", message);
         return ResponseEntity.ok(response);
     }
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> createUser(
+            @RequestPart("user") UserDTO userDto, // ✅ use DTO directly
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        try {
+            if (file != null && !file.isEmpty()) {
+                String imageUrl = fileStorageService.storeFile(file);
+                userDto.setImageUrl(imageUrl);
+            }
+
+            userService.createUser(userDto); // ✅ You should convert DTO to Entity inside service
+
+            return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", "Registration failed", "details", e.getMessage()));
+        }
+    }
+
+
 
 
 }

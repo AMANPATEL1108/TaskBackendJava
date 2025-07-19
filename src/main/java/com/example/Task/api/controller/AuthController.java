@@ -64,23 +64,25 @@ public class AuthController {
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> createUser(
-            @RequestPart("user") String userJson,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("user") UserDTO userDto,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
 
         try {
-            // Convert JSON string to UserDTO manually
-            ObjectMapper mapper = new ObjectMapper();
-            UserDTO userDto = mapper.readValue(userJson, UserDTO.class);
+            // Save file and set image URL
+            if (file != null && !file.isEmpty()) {
+                String imageUrl = fileStorageService.storeFile(file);
+                userDto.setImageUrl(imageUrl);
+            }
 
-            String imageUrl = fileStorageService.storeFile(file);
-            userDto.setImageUrl(imageUrl);
-
+            // Save user
             userService.createUser(userDto);
 
             Map<String, String> response = new HashMap<>();
-            response.put("message", "User created successfully");
+            response.put("message", "User registered successfully");
             return ResponseEntity.ok(response);
+
         } catch (Exception e) {
+            e.printStackTrace(); // for debug
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid data: " + e.getMessage()));
         }
     }
